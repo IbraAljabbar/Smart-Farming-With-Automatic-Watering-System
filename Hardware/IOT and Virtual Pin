@@ -1,0 +1,73 @@
+# Hardware Architecture, Wiring, and IoT Configuration
+
+This document provides a detailed breakdown of the hardware connections, power distribution, and Blynk IoT virtual pin mappings for the Smart Farming Automatic Watering System.
+
+---
+
+## Power Distribution Scheme
+
+The system operates on a dual-power source configuration to protect the microcontroller from voltage spikes caused by the motor:
+1. Logic Power: The ESP32 board, DHT11 sensor, capacitive soil moisture sensor, and the relay control circuit are powered by the ESP32's internal rails (3.3V and 5V), supplied via the Micro USB port.
+2. Actuator Power: The mini water pump is powered independently by an external 9V battery through the relay switch to ensure stable operation and prevent system resets.
+
+---
+
+## Detailed Pin Interconnections
+
+### 1. Capacitive Soil Moisture Sensor
+This sensor measures the dielectric permittivity of the surrounding soil to determine moisture levels. It is wired directly to one of the ESP32's Analog-to-Digital Converter (ADC) pins.
+- Connect the sensor's VCC pin to the ESP32 3V3 pin.
+- Connect the sensor's GND pin to an ESP32 GND pin.
+- Connect the sensor's A0 (Analog Output) pin to ESP32 GPIO 34.
+
+### 2. DHT11 Temperature & Humidity Sensor
+The DHT11 provides digital readings of ambient temperature and relative humidity using a single-bus communication protocol.
+- Connect the sensor's VCC pin to the ESP32 3V3 or 5V pin.
+- Connect the sensor's GND pin to an ESP32 GND pin.
+- Connect the sensor's Data / Out pin to ESP32 GPIO 4.
+
+### 3. 5V 1-Channel Relay Module
+The relay acts as an isolated electronic switch allowing the low-current ESP32 pin to control the high-current 9V water pump circuit.
+- Connect the module's VCC pin to the ESP32 5V / VIN pin.
+- Connect the module's GND pin to an ESP32 GND pin.
+- Connect the module's IN (Signal Input) pin to ESP32 GPIO 26.
+
+### 4. Piezo Buzzer
+The buzzer serves as an audible alert mechanism for watering cycles and high-temperature warnings.
+- Connect the buzzer's Positive (+ / Long Leg) pin to ESP32 GPIO 25.
+- Connect the buzzer's Negative (- / Short Leg) pin to an ESP32 GND pin.
+
+---
+
+## High-Voltage Actuator Circuitry (Pump & Battery)
+
+The load side of the relay module manages the physical activation of the water pump. The circuit is wired as an open-loop switch:
+- Run a jumper wire from the Positive (+) terminal of the 9V Battery to the Normally Open (NO) terminal of the relay block.
+- Connect the Common (COM) terminal of the relay block to the Positive (Red) wire of the Mini Water Pump.
+- Splice or connect the Negative (Black) wire of the Mini Water Pump directly back to the Negative (-) terminal of the 9V Battery.
+
+---
+
+## Blynk IoT Datastream Configuration
+
+To ensure the hardware interacts correctly with the Blynk Cloud Mobile App or Web Dashboard, configure your Blynk Datastreams using the following Virtual Pins (V-Pins):
+
+- Virtual Pin V1
+  - Data Type: Integer
+  - Purpose: Soil Moisture Percentage (0% to 100%)
+  - Widget Suggestion: Gauge or Label Value
+
+- Virtual Pin V2
+  - Data Type: Double / Float
+  - Purpose: Ambient Air Temperature in Celsius
+  - Widget Suggestion: Value Display or SuperChart
+
+- Virtual Pin V3
+  - Data Type: Double / Float
+  - Purpose: Ambient Air Humidity Percentage
+  - Widget Suggestion: Value Display or SuperChart
+
+- Virtual Pin V4
+  - Data Type: Integer (0 or 1)
+  - Purpose: Manual Water Pump Override Switch & Relay Status Feedback
+  - Widget Suggestion: Switch Button
